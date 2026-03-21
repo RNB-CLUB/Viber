@@ -1,0 +1,22 @@
+{
+  "name": "viber",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RNB-CLUB/Viber.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/RNB-CLUB/Viber/issues"
+  },
+  "homepage": "https://github.com/RNB-CLUB/Viber#readme"
+}

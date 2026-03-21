@@ -1,0 +1,77 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-100: #7B4F8E;
+    --primary-200: #563763;
+    --primary-300: #D7C5DF;
+    --accent-100: #B794C0;
+    --accent-200: #895896;
+    --text-100: #FFFFFF;
+    --text-200: #909090;
+    --bg-100: #3B2D4D;
+    --bg-200: #382B49;
+    --bg-300: #4D3B64;
+}
+
+body {
+    background-color: var(--bg-100);
+    color: var(--text-100);
+    font-family: "Fira Sans", sans-serif;
+    height: 100vh;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+header {
+    background-color: var(--primary-100);
+    color: var(--bg-200);
+    padding: 0.3rem;
+    text-align: center;
+    box-shadow: 5px 0 10px var(--text-100);
+}
+
+header h1 {
+    font-family: "Slackey", sans-serif;
+}
+
+main {
+    flex-grow: 1;
+    padding: 1rem;
+}
+
+main ul {
+    background-color: var(--primary-200);
+    color: var(--text-200);
+    padding-bottom: 1rem, 0.3rem;
+    border-radius: 1rem;
+    list-style: none;
+    width: fit-content;
+    margin: 0.3rem;
+}
+ form{
+    display: flex;
+    align-items: center;
+    background-color: var(--primary-200);
+    padding: 0.3rem;
+    gap: 0.3rem
+    ;
+ }
+ form input{
+    flex-grow: 1;
+    border: none;
+    padding: 0.3rem 1rem;
+    background-color: var(--bg-200);
+    border-radius: 1rem;
+ }
+
+ form button {
+    border: none;
+    padding: 0.3rem 1rem;
+    background-color: var(--bg-200);
+    border-radius: 1rem;
+    cursor: pointer;
+ }
