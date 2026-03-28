@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/RNB-CLUB/Viber/issues"
   },
-  "homepage": "https://github.com/RNB-CLUB/Viber#readme"
+  "homepage": "https://github.com/RNB-CLUB/Viber#readme",
+  "dependencies": {
+    "socket.io": "^4.8.3"
+  }
 }
