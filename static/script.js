@@ -2,30 +2,39 @@ const socket = io()
 
 let form = document.querySelector("#form")
 
-form.addEventListener("submit", (event)=>{
+form.addEventListener("submit", (event) => {
     event.preventDefault()
     let message = event.target["input"].value
     console.log(message)
-    if(message){
+    if (message) {
         socket.emit("new_message", message)
-    event.target.reset()
+        event.target.reset()
     }
 })
 
-socket.on("message", (data)=>{
+socket.on("message", (data) => {
     console.log('From server: "', data)
     addMessage(data)
 })
 
-function addMessage(message){
+function addMessage(message) {
     let messagesList = document.querySelector(".messages")
     let messageItem = document.createElement("li")
-    messageItem.textContent = `%{message.user}: ${message.message}`
+    messageItem.textContent = `${message.user}: ${message.message}`
     messagesList.appendChild(messageItem)
     window.scrollTo(0, messagesList.scrollHeight)
 }
 
-document.querySelector(".auth").addEventListener("click", ()=>{
-    let nickname = promt("Write name here", "Agent067")
-    if(nickname) socket.emit("new_nickname", nickname)
+document.querySelector(".auth").addEventListener("click", () => {
+    let nickname = prompt("Write name here", "Agent067")
+    if (nickname) socket.emit("new_nickname", nickname)
 })
+
+function getMessages() {
+    fetch("/messages").then(res => res.json()).then(data => {
+        console.log(data)
+        data.forEach(message => addMessage({user: message.author, message: message.content}))
+    })
+}
+
+getMessages()
