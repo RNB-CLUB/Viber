@@ -16,6 +16,21 @@ const server = createServer(async (req, res) => {
             res.writeHead(200, { "content-type": "text/html" })
             res.end(indexHtmlFile)
             break
+        case "/register":
+            if (req.method == "GET") {
+                let registerHtmlFile = getStaticFile("register.html")
+                res.writeHead(200, { "content-type": "text/html" })
+                res.end(registerHtmlFile)
+            } else if (req.method == "POST") {
+                let data = ""
+                req.on("data", (chunk) => data += chunk)
+                req.on("end", () => {
+                    console.log(data)
+                    res.end()
+                })
+            }
+            break
+
         case "/style.css":
             let styleCssFile = getStaticFile("style.css")
             res.writeHead(200, { "content-type": "text/css" })
