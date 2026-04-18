@@ -3,7 +3,8 @@ import path, { dirname } from "path"
 import { fileURLToPath } from "url"
 import { readFileSync } from "fs"
 import { Server } from "socket.io"
-import db, { init as initDB, getMessages, addMessages } from "./db.js"
+import db, { init as initDB, getMessages, addMessages, isUserExist, addUser } from "./db.js"
+import { error } from "console"
 
 initDB()
 
@@ -16,6 +17,19 @@ const server = createServer(async (req, res) => {
             res.writeHead(200, { "content-type": "text/html" })
             res.end(indexHtmlFile)
             break
+        case "/login":
+            if (req.method == "GET") {
+                let registerHtmlFile = getStaticFile("login.html")
+                res.writeHead(200, { "content-type": "text/html" })
+                res.end(registerHtmlFile)
+            } else if (req.method == "POST") {
+                let data = ""
+                req.on("data", (chunk) => data += chunk)
+                req.on("end", () => {
+                    registerUser(req, res, data)
+                })
+            }
+            break
         case "/register":
             if (req.method == "GET") {
                 let registerHtmlFile = getStaticFile("register.html")
@@ -25,12 +39,10 @@ const server = createServer(async (req, res) => {
                 let data = ""
                 req.on("data", (chunk) => data += chunk)
                 req.on("end", () => {
-                    console.log(data)
-                    res.end()
+                    loginUser(req, res, data)
                 })
             }
             break
-
         case "/style.css":
             let styleCssFile = getStaticFile("style.css")
             res.writeHead(200, { "content-type": "text/css" })
@@ -79,4 +91,40 @@ function getStaticFile(name) {
     let bufferFile = readFileSync(pathToFile)
     let data = Buffer.from(bufferFile)
     return data
+}
+
+async function registerUser(req, res, data) {
+    console.log(data)
+    let p = JSON.parse(data)
+    let login = p.login
+    let password = p.password
+
+    if (!login || !password) {
+        res.statusCode = 400
+        res.end(JSON.stringify({ status: "Empty login ot password" }))
+        return
+    }
+    if (await isUserExist(login)) {
+        res.statusCode = 400
+        res.end(JSON.stringify({ status: "User already exist" }))
+        return
+    }
+
+    let result = addUser(login, password)
+    if (result) {
+        res.statusCode = 201
+        res.end(JSON.stringify({ status: "ok" }))
+    } else {
+        res.statusCode = 500
+        res.end(JSON.stringify({ error: "Server error" }))
+    }
+
+
+}
+async function loginUser(req, res, data) {
+    let info = JSON.parse(data)
+    let login = info.login
+    let password = info.password
+    console.log(login, password)
+    res.end()
 }

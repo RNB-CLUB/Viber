@@ -20,14 +20,12 @@
 <body>
     <main id="register">
         <form>
-            <h1>Register</h1>
+            <h1>Autorisation</h1>
             <label for="login">Login</label>
             <input type="text" name="login" id="login"></label>
             <label for="password">Password</label>
             <input type="password" name="password" id="password"></label>
-            <label for="repeat">Repeat Password</label>
-            <input type="password" name="repeat" id="repeat"></label>
-            <button type="submit">Sign Up</button>
+            <button type="submit">Log In</button>
         </form>
     </main>
     <script>
@@ -36,23 +34,19 @@
             event.preventDefault()
             let data = {
                 login: event.target["login"].value,
-                password: event.target["password"].value,
-                repeat: event.target["repeat"].value
+                password: event.target["password"].value
             }
             console.log(data)
             if (data.login.length < 3) {
-                alertify.error("Login too short!")
+                alertify.error("Login too short")
                 return
             }
             if (data.password.length < 5) {
-                alertify.error("Password too short!");
+                alertify.error();
+                ("Password too short")
                 return
             }
-            if (data.password != data.repeat) {
-                alertify.error("Password and repeated password don't not much!")
-                return
-            }
-            fetch("/register", {
+            fetch("/login", {
                 method: "POST",
                 headers: {
                     "Content-type": "application/json"
@@ -62,7 +56,7 @@
                 if (res.ok) {
                     navigation.navigate("/")
                 }else{
-                    alertify.error("Register Error!")
+                    alertify.error("Login Error")
                 }
             })
         })
