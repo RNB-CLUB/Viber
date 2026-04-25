@@ -3,8 +3,11 @@ import path, { dirname } from "path"
 import { fileURLToPath } from "url"
 import { readFileSync } from "fs"
 import { Server } from "socket.io"
-import db, { init as initDB, getMessages, addMessages, isUserExist, addUser } from "./db.js"
+import db, { init as initDB, getMessages, addMessages, isUserExist, addUser, getUser } from "./db.js"
 import { error } from "console"
+import jwt from "jsonwebtoken"
+import cookie from "cookie"
+
 
 initDB()
 
@@ -13,6 +16,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const server = createServer(async (req, res) => {
     switch (req.url) {
         case "/":
+            guarded(req, res)
             let indexHtmlFile = getStaticFile("index.html")
             res.writeHead(200, { "content-type": "text/html" })
             res.end(indexHtmlFile)
@@ -26,7 +30,7 @@ const server = createServer(async (req, res) => {
                 let data = ""
                 req.on("data", (chunk) => data += chunk)
                 req.on("end", () => {
-                    registerUser(req, res, data)
+                    loginUser(req, res, data)
                 })
             }
             break
@@ -75,7 +79,6 @@ io.on("connection", (socket) => {
     })
 
     socket.on("new_message", async (data) => {
-        console.log(data)
         io.emit("message", {
             user: nickname,
             message: data
@@ -94,7 +97,6 @@ function getStaticFile(name) {
 }
 
 async function registerUser(req, res, data) {
-    console.log(data)
     let p = JSON.parse(data)
     let login = p.login
     let password = p.password
@@ -125,6 +127,33 @@ async function loginUser(req, res, data) {
     let info = JSON.parse(data)
     let login = info.login
     let password = info.password
-    console.log(login, password)
-    res.end()
+
+    let user = await getUser(login, password)
+    if (user == null) {
+        res.status = 404
+        res.end("User Not Found")
+        return
+    }
+    if (!user) {
+        res.status = 401
+        res.end("incorrect credentials")
+        return
+    }
+    let token = jwt.sign({ id: user.id, login: user.login }, "abc", { expiresIn: 60 * 60 })
+    res.status = 200
+    res.end(token)
+}
+
+
+function getCredentials(c = "") {
+    const cookies = cookie.parse(c)
+    const token = cookies?.token
+    if (!token) return null 
+    let user = jwt.verify(token, "abc")
+    return user
+}
+
+function guarded(req, res) {
+    const user = getCredentials(req.headers?.cookie)
+    console.log(user)
 }

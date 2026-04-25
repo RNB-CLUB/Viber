@@ -52,10 +52,12 @@
                     "Content-type": "application/json"
                 },
                 body: JSON.stringify(data)
-            }).then / (res=> {
+            }).then(async res => {
                 if (res.ok) {
+                    let token = await res.text()
+                    document.cookie = "token=" + token
                     navigation.navigate("/")
-                }else{
+                } else {
                     alertify.error("Login Error")
                 }
             })
@@ -63,4 +65,5 @@
     </script>
     </form>
 </body>
+
 </html>
