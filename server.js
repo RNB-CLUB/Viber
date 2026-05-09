@@ -7,7 +7,8 @@ import db, { init as initDB, getMessages, addMessages, isUserExist, addUser, get
 import { error } from "console"
 import jwt from "jsonwebtoken"
 import cookie from "cookie"
-
+import dotenv from "dotenv"
+dotenv.config()
 
 initDB()
 
@@ -16,6 +17,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const server = createServer(async (req, res) => {
     switch (req.url) {
         case "/":
+            if (guarded(req, res)) return
             guarded(req, res)
             let indexHtmlFile = getStaticFile("index.html")
             res.writeHead(200, { "content-type": "text/html" })
@@ -70,9 +72,19 @@ const server = createServer(async (req, res) => {
 
 const io = new Server(server)
 
+io.use((socket, next) => {
+    const cookie = socket.handshake.auth.cookie
+    const credentials = getCredentials(cookie)
+    if (credentials == null || credentials == "error") {
+    next(new Error("no auth"))
+    }
+    socket.credentials = credentials
+    next()
+})
+
 io.on("connection", (socket) => {
     console.log(`User connected with id: ${socket.id}`)
-    let nickname = "anonymous"
+    let nickname = socket.credentials.login
 
     socket.on("new_nickname", (data) => {
         nickname = data
@@ -83,7 +95,7 @@ io.on("connection", (socket) => {
             user: nickname,
             message: data
         })
-        await addMessages(1, data)
+        await addMessages(socket.credentials.id, data)
     })
 })
 
@@ -130,16 +142,16 @@ async function loginUser(req, res, data) {
 
     let user = await getUser(login, password)
     if (user == null) {
-        res.status = 404
+        res.statusCode = 404
         res.end("User Not Found")
         return
     }
     if (!user) {
-        res.status = 401
+        res.statusCode = 401
         res.end("incorrect credentials")
         return
     }
-    let token = jwt.sign({ id: user.id, login: user.login }, "abc", { expiresIn: 60 * 60 })
+    let token = jwt.sign({ id: user.id, login: user.login }, process.env.SECRET, { expiresIn: 60 * 60 })
     res.status = 200
     res.end(token)
 }
@@ -148,12 +160,22 @@ async function loginUser(req, res, data) {
 function getCredentials(c = "") {
     const cookies = cookie.parse(c)
     const token = cookies?.token
-    if (!token) return null 
-    let user = jwt.verify(token, "abc")
-    return user
+    if (!token) return null
+    try {
+        let user = jwt.verify(token, "process.env.SECRET")
+        return user
+    } catch (error) {
+        console.log(error.message)
+        return "error"
+    }
 }
 
 function guarded(req, res) {
     const user = getCredentials(req.headers?.cookie)
     console.log(user)
+    if (user == null || user == "error") {
+        res.writeHead(302, { "location": "/login" })
+        res.end()
+        return true
+    }
 }

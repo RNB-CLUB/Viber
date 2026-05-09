@@ -1,17 +1,19 @@
-import { createConnection } from "mysql2";
-import { compare, genSalt, hash } from "bcrypt";
+import { createConnection } from "mysql2"
+import { compare, genSalt, hash } from "bcrypt"
+import dotenv from "dotenv"
 
 let db = createConnection({
-    host: "localhost",
-    user: "root",
-    password: "root",
-    database: "viber"
-}).promise();
+    host: process.env.HOST || "localhost",
+    user: process.env.USER || "root",
+    password: process.env.PASSWORD || "root",
+    database: process.env.DATABASE || "viber",
+    port: process.env.PORT || "localhost"
+}).promise()
 
 export async function init() {
     try {
         await db.query(`
-    CREATE TABLE IF NOT EXISTS user(
+    CREATE TABLE IF NOT EXISTS user(np
     id INT PRIMARY KEY AUTO_INCREMENT,
     login VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(100) NOT NULL
@@ -65,12 +67,12 @@ export async function addUser(login, password) {
     }
 }
 
-export async function getUser(login, password){
-    let results = await db.query("SELECT * FROM user WHERE login = ?",[login])
-    if (results[0].length == 0){
+export async function getUser(login, password) {
+    let results = await db.query("SELECT * FROM user WHERE login = ?", [login])
+    if (results[0].length == 0) {
         return null
     }
-    if(!await compare(password, results[0][0].password)){
+    if (!await compare(password, results[0][0].password)) {
         return false
     }
     return results[0][0]
